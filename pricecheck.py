@@ -3,7 +3,7 @@ import re
 
 import requests
 
-baseUrl = "https://api.nexushub.co/wow-classic/v1/items/firemaw-alliance/"
+baseUrl = "https://api.nexushub.co/wow-classic/v1/items"
 
 
 def goldSilverCopper(value):
@@ -12,12 +12,14 @@ def goldSilverCopper(value):
     copper = (value - (gold*100*100) - silver*100)
     return f"{gold}g {silver}s {copper}c"
 
+
 def prettyStats(stats):
     return f"\n    Min Buyout: {goldSilverCopper(stats['minBuyout'])}\n      (Historical Value: {goldSilverCopper(stats['historicalValue'])})\n      (Market Value: {goldSilverCopper(stats['marketValue'])})"
 
-def getItem(item: str):
-    item = item.replace(" ", "-")
-    r = requests.get(baseUrl + item)
+
+def getItem(item, realm, faction):
+    item = "-".join(item)
+    r = requests.get("/".join([baseUrl, realm + "-" + faction, item]))
     data = r.json()
     stats = data["stats"]
     print(data["name"])
@@ -25,4 +27,17 @@ def getItem(item: str):
     print("  Previous: ", prettyStats(stats["previous"]))
 
 
-getItem("haste Potion")
+def parseArgs():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-r", "--realm", default="firemaw",
+                        help="Realm Name")
+    parser.add_argument("-f", "--faction", default="alliance",
+                        help="Faction")
+    parser.add_argument('item',  nargs='+',
+                        help='Item Name')
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parseArgs()
+    getItem(args.item, args.realm, args.faction)
