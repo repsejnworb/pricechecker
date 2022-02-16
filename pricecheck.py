@@ -26,9 +26,13 @@ def requestData(url):
     return json.loads(data.decode(encoding))
 
 
+
 def getItem(item, realm, faction):
     item = "-".join(item)
     data = requestData("/".join([baseUrl, realm + "-" + faction, item]))
+    if "error" in data:
+        print(f"{data['error']}\n{data['reason']}")
+        return
     stats = data["stats"]
     print(data["name"])
     print("  Current: ", prettyStats(stats["current"]))
