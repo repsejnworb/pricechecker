@@ -1,7 +1,8 @@
 import argparse
-import re
+import json
+import urllib.request
+import urllib.parse
 
-import requests
 
 baseUrl = "https://api.nexushub.co/wow-classic/v1/items"
 
@@ -17,10 +18,17 @@ def prettyStats(stats):
     return f"\n    Min Buyout: {goldSilverCopper(stats['minBuyout'])}\n      (Historical Value: {goldSilverCopper(stats['historicalValue'])})\n      (Market Value: {goldSilverCopper(stats['marketValue'])})"
 
 
+
+def requestData(url):
+    f = urllib.request.urlopen(url)
+    data = f.read()
+    encoding = f.info().get_content_charset('utf-8')
+    return json.loads(data.decode(encoding))
+
+
 def getItem(item, realm, faction):
     item = "-".join(item)
-    r = requests.get("/".join([baseUrl, realm + "-" + faction, item]))
-    data = r.json()
+    data = requestData("/".join([baseUrl, realm + "-" + faction, item]))
     stats = data["stats"]
     print(data["name"])
     print("  Current: ", prettyStats(stats["current"]))
